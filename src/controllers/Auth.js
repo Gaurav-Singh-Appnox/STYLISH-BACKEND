@@ -104,33 +104,54 @@ exports.login = async (req, res) => {
 
 exports.editUserDetail = async (req, res) => {
   try {
+    console.log("edit detail api invoked");
+    // User ID is now available from the middleware
+    const userId = req.user.id;
+
+    // Extract data from body
     const { firstName, lastName, email } = req.body;
 
+    // Validate input
     if (!firstName || !lastName || !email) {
       return res.status(400).json({
         success: false,
         message: "All fields are required.",
       });
     }
-    const user = User.findOne({ email });
+
+    // Find and update user
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { firstName, lastName, email },
+      { new: true }
+    );
+
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        message: "Invalid email or password.",
+        message: "User not found.",
       });
     }
-    await User.create({
-      email,
-      password: hashedPassword,
-    });
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
-      message: "User registered successfully.",
+      message: "User details updated successfully.",
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error during edit user Details:", error);
+    return res.status(500).json({
+      success: false,
+      message:
+        "An error occurred during user update details. Please try again.",
+    });
+  }
 };
-
 // ChangePassword Controller
 // exports.changePassword = async (req, res) => {
 //   try {

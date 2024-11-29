@@ -15,13 +15,12 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-  }),
+  })
 );
 const userRoutes = require("./routes/User");
 
 //routes
 app.use("/api/v1/auth", userRoutes);
-
 
 app.get("/", (req, res) => {
   return res.json({

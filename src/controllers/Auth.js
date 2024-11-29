@@ -137,7 +137,6 @@ exports.editUserDetail = async (req, res) => {
       success: true,
       message: "User details updated successfully.",
       user: {
-        id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,

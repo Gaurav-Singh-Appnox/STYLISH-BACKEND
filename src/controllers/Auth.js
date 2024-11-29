@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-
 exports.signUp = async (req, res) => {
   try {
     console.log(req.body);
@@ -84,7 +83,9 @@ exports.login = async (req, res) => {
       email: user.email,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    });
 
     return res.status(200).json({
       success: true,
@@ -99,6 +100,35 @@ exports.login = async (req, res) => {
       message: "An error occurred during login. Please try again.",
     });
   }
+};
+
+exports.editUserDetail = async (req, res) => {
+  try {
+    const { firstName, lastName, email } = req.body;
+
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
+    }
+    const user = User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password.",
+      });
+    }
+    await User.create({
+      email,
+      password: hashedPassword,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully.",
+    });
+  } catch (error) {}
 };
 
 // ChangePassword Controller

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { googleLogin } = require('../controllers/authController');
 
 const {
   login,
@@ -21,5 +22,9 @@ router.post("/forgotPassword");
 // edit user detail
 
 router.post("/editUser", authMiddleware, editUserDetail);
+
+//google login 
+
+router.post('/google-login', googleLogin);
 
 module.exports = router;

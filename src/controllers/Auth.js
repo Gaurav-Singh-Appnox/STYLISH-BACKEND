@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const { OAuth2Client } = require("google-auth-library");
 
 exports.signUp = async (req, res) => {
   try {
@@ -151,6 +152,117 @@ exports.editUserDetail = async (req, res) => {
     });
   }
 };
+
+const client = new OAuth2Client(
+  "530592032796-pmki3auqli1ce063oar29inephua40pr.apps.googleusercontent.com"
+);
+
+exports.googleLogin = async (req, res) => {
+  try {
+    const { idToken, email, name } = req.body;
+
+    // Verify the Google ID token
+    const ticket = await client.verifyIdToken({
+      idToken: idToken,
+      audience:
+        "530592032796-pmki3auqli1ce063oar29inephua40pr.apps.googleusercontent.com",
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId } = payload;
+
+    // Find or create user
+    let user = await User.findOne({
+      $or: [{ email: email }, { "googleLogin.googleId": googleId }],
+    });
+
+    if (!user) {
+      // Create new user if doesn't exist
+      user = new User({
+        email: email,
+        name: name,
+        googleLogin: {
+          googleId: googleId,
+          verified: true,
+        },
+        // You might want to set a default password or handle it differently
+        password: null,
+      });
+      await user.save();
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      success: true,
+      token: token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(400).json({
+      success: false,
+      message: "Google authentication failed",
+    });
+  }
+};
+
+// const FacebookStrategy = require("passport-facebook").Strategy;
+
+// passport.use(
+//   new FacebookStrategy(
+//     {
+//       clientID: process.env.FACEBOOK_APP_ID,
+//       clientSecret: process.env.FACEBOOK_APP_SECRET,
+//       callbackURL: "/auth/facebook/callback", // Match Facebook app's configuration
+//       profileFields: ["id", "emails", "name"],
+//     },
+//     async (accessToken, refreshToken, profile, done) => {
+//       try {
+//         let user = await User.findOne({ facebookId: profile.id });
+
+//         if (!user) {
+//           // Create a new user if not found
+//           user = await User.create({
+//             facebookId: profile.id,
+//             email: profile.emails[0]?.value,
+//             name: `${profile.name.givenName} ${profile.name.familyName}`,
+//           });
+//         }
+
+//         return done(null, user);
+//       } catch (error) {
+//         return done(error, null);
+//       }
+//     }
+//   )
+// );
+
+// passport.serializeUser((user, done) => {
+//   done(null, user.id); // Serialize user ID
+// });
+
+// passport.deserializeUser(async (id, done) => {
+//   try {
+//     const user = await User.findById(id);
+//     done(null, user);
+//   } catch (error) {
+//     done(error, null);
+//   }
+// });
+
 // ChangePassword Controller
 // exports.changePassword = async (req, res) => {
 //   try {

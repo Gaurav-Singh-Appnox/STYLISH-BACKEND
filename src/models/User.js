@@ -22,15 +22,15 @@ const userSchema = new mongoose.Schema(
     token: {
       type: String,
     },
-    googleLogin: {
-      googleId: {
-        type: String,
-      },
-      verified: {
-        type: Boolean,
-        default: false,
-      },
-    },
+    // googleLogin: {
+    //   googleId: {
+    //     type: String,
+    //   },
+    //   verified: {
+    //     type: Boolean,
+    //     default: false,
+    //   },
+    // },
   },
   { timestamps: true }
 );

@@ -153,71 +153,71 @@ exports.editUserDetail = async (req, res) => {
   }
 };
 
-const client = new OAuth2Client(
-  "530592032796-pmki3auqli1ce063oar29inephua40pr.apps.googleusercontent.com"
-);
+// const client = new OAuth2Client(
+//   "530592032796-pmki3auqli1ce063oar29inephua40pr.apps.googleusercontent.com"
+// );
 
-exports.googleLogin = async (req, res) => {
-  try {
-    const { idToken, email, name } = req.body;
+// exports.googleLogin = async (req, res) => {
+//   try {
+//     const { idToken, email, name } = req.body;
 
-    // Verify the Google ID token
-    const ticket = await client.verifyIdToken({
-      idToken: idToken,
-      audience:
-        "530592032796-pmki3auqli1ce063oar29inephua40pr.apps.googleusercontent.com",
-    });
+//     // Verify the Google ID token
+//     const ticket = await client.verifyIdToken({
+//       idToken: idToken,
+//       audience:
+//         "530592032796-pmki3auqli1ce063oar29inephua40pr.apps.googleusercontent.com",
+//     });
 
-    const payload = ticket.getPayload();
-    const { sub: googleId } = payload;
+//     const payload = ticket.getPayload();
+//     const { sub: googleId } = payload;
 
-    // Find or create user
-    let user = await User.findOne({
-      $or: [{ email: email }, { "googleLogin.googleId": googleId }],
-    });
+//     // Find or create user
+//     let user = await User.findOne({
+//       $or: [{ email: email }, { "googleLogin.googleId": googleId }],
+//     });
 
-    if (!user) {
-      // Create new user if doesn't exist
-      user = new User({
-        email: email,
-        name: name,
-        googleLogin: {
-          googleId: googleId,
-          verified: true,
-        },
-        // You might want to set a default password or handle it differently
-        password: null,
-      });
-      await user.save();
-    }
+//     if (!user) {
+//       // Create new user if doesn't exist
+//       user = new User({
+//         email: email,
+//         firstName: name,
+//         googleLogin: {
+//           googleId: googleId,
+//           verified: true,
+//         },
+//         // You might want to set a default password or handle it differently
+//         password: " ",
+//       });
+//       await user.save();
+//     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        email: user.email,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+//     // Generate JWT token
+//     const token = jwt.sign(
+//       {
+//         userId: user._id,
+//         email: user.email,
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1h" }
+//     );
 
-    res.json({
-      success: true,
-      token: token,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-      },
-    });
-  } catch (error) {
-    console.error("Google login error:", error);
-    res.status(400).json({
-      success: false,
-      message: "Google authentication failed",
-    });
-  }
-};
+//     res.json({
+//       success: true,
+//       token: token,
+//       user: {
+//         id: user._id,
+//         email: user.email,
+//         name: user.firstName,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Google login error:", error);
+//     res.status(400).json({
+//       success: false,
+//       message: "Google authentication failed",
+//     });
+//   }
+// };
 
 // const FacebookStrategy = require("passport-facebook").Strategy;
 
